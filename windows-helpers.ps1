@@ -1,6 +1,41 @@
 function prompt {
-    Write-Host "--> "-NoNewline -ForegroundColor Black -BackgroundColor DarkGreen
+    write-Host (Get-Location) -ForegroundColor DarkGreen
+    Write-Host "--> " -NoNewline -ForegroundColor Green
     return " "
+}
+
+function Show-WindowsHelpersHealthInfo {
+    Write-Host "Healty..."
+}
+
+function Stop-Process {
+    param (
+        [Parameter(Position = 0)]
+        [string]
+        $name,
+
+        [Parameter(Position = 1)]
+        [string]
+        $operator = "="
+    )
+
+    if ($operator -eq "%") {
+        $name = "*$name*"
+    }
+
+    $processes = (Get-Process -Name $name);
+    Write-Host "$($processes.Count) process found"
+
+    $processes | ForEach-Object -Process {
+        Write-Host "$($_.ProcessName) ($($_.Id))" 
+        $_.Kill(); 
+    }
+    
+    # Get-Process -Name $name | ForEach-Object -Process   { 
+    #     Write-Host "$($_.ProcessName) ($($_.Id)) not killed" -ForegroundColor Red;
+    # }
+
+    Write-Host "done."
 }
 
 $aspnet_temp = $env:ASPNET_TEMP
@@ -136,10 +171,35 @@ function Remove-Target {
     }
 
     $Host.PrivateData.VerboseForegroundColor = $back
-}   }
-    else {
-        _Remove-Target $target $root -gredy $gredy
+
+}
+
+function Get-DefaultBrowserPath {
+    #Get the default Browser path
+    # New-PSDrive -Name HKCR -PSProvider registry -Root Hkey_Classes_Root | Out-Null
+    # $browserPath = ((Get-ItemProperty 'HKCR:\http\shell\open\command').'(default)').Split('"')
+    # return $browserPath
+
+    return "C:\Program Files\Mozilla Firefox\firefox.exe"
+}
+
+function Remove-DuplicateItems {
+    [CmdletBinding()]
+    param (
+        [Parameter(Position = 0, Mandatory = 1)]     
+        $list
+    )
+
+    $map = @{}
+
+    foreach ($e in $list) {
+        if ($map[$e] -ne 1) {
+            $map[$e] = 1
+        }
     }
 
-    $Host.PrivateData.VerboseForegroundColor = $back
+    return $map.Keys
 }
+
+
+Write-Host "WINDOWS helpers loaded"
